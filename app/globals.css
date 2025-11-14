@@ -86,6 +86,9 @@
   --input: #2a2a2a;
   --ring: #6d7d3e;
 }
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
 
 @layer base {
   * {
