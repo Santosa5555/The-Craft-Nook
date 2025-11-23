@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { signOut } from 'next-auth/react';
 
 const navItems = [
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/dashboard/products', label: 'Products', icon: Package },
   { href: '/dashboard/orders', label: 'Orders', icon: ShoppingCart },
   { href: '/dashboard/customers', label: 'Customers', icon: Users },
@@ -22,7 +22,7 @@ export default function AdminSidebar() {
     <aside className="fixed inset-y-0 left-0 z-50 w-64 bg-background border-r border-border flex flex-col">
       {/* Logo */}
       <div className="flex h-16 items-center justify-center border-b border-border px-6">
-        <Link href="/dashboard" className="flex items-center gap-2 font-bold text-xl">
+        <Link href="/admin/dashboard" className="flex items-center gap-2 font-bold text-xl">
           <span className="text-primary">Handicraft</span>
           <span className="text-muted-foreground text-sm">Admin</span>
         </Link>

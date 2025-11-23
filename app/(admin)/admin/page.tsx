@@ -1,10 +1,19 @@
 // app/admin/page.tsx
 'use client';
-import { signIn } from 'next-auth/react';
+import { signIn, useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 
 export default function AdminLogin() {
   const router = useRouter();
+  const { data: session, status } = useSession();
+
+  // Redirect if already logged in as admin
+  useEffect(() => {
+    if (status === 'authenticated' && session?.user?.role === 'ADMIN') {
+      router.push('/admin/dashboard');
+    }
+  }, [session, status, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,17 +28,31 @@ export default function AdminLogin() {
     });
 
     if (res?.ok) {
-      router.push('/dashboard');
+      router.push('/admin/dashboard');
     } else {
       alert('Invalid credentials');
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-sm mx-auto mt-20 space-y-4">
-      <input name="email" type="email" placeholder="admin@handicraft.com" required className="w-full p-2 border" />
-      <input name="password" type="password" placeholder="Password" required className="w-full p-2 border" />
-      <button type="submit" className="w-full bg-primary text-white p-2">Admin Login</button>
+    <form onSubmit={handleSubmit} className="mx-auto mt-20 max-w-sm space-y-4">
+      <input
+        name="email"
+        type="email"
+        placeholder="admin@handicraft.com"
+        required
+        className="w-full border p-2"
+      />
+      <input
+        name="password"
+        type="password"
+        placeholder="Password"
+        required
+        className="w-full border p-2"
+      />
+      <button type="submit" className="bg-primary w-full p-2 text-white">
+        Admin Login
+      </button>
     </form>
   );
-}//sigin form for admin here
+} 

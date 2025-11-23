@@ -8,7 +8,11 @@ export default withAuth(
     const { pathname } = req.nextUrl;
 
     // === ADMIN ROUTES ===
-    if (pathname.startsWith('/dashboard')) {
+    // Protect admin dashboard and other admin routes (but allow /admin login page)
+    if (
+      pathname.startsWith('/admin/dashboard') ||
+      (pathname.startsWith('/admin/') && pathname !== '/admin')
+    ) {
       if (!token) {
         return NextResponse.redirect(new URL('/admin', req.url));
       }
@@ -23,7 +27,7 @@ export default withAuth(
         return NextResponse.redirect(new URL('/auth/login', req.url));
       }
       if (token.role === 'ADMIN') {
-        return NextResponse.redirect(new URL('/dashboard', req.url));
+        return NextResponse.redirect(new URL('/admin/dashboard', req.url));
       }
     }
   },
@@ -35,5 +39,5 @@ export default withAuth(
 );
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/cart/:path*', '/orders/:path*'],
+  matcher: ['/admin/:path*', '/cart/:path*', '/orders/:path*'],
 };

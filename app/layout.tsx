@@ -1,14 +1,23 @@
 // app/layout.tsx
 import type { Metadata } from 'next';
 import ClientProviders from '@/components/ClientProvider';
-import { Inter } from 'next/font/google';
+import { Playfair_Display, Nunito } from 'next/font/google';
 import ScrollToTop from '@/components/generals/scrollToTop';
 import ReactQueryProvider from '@/providers/ReactQueryProvider';
 import './globals.css';
-const inter = Inter({
-  variable: '--font-inter',
+
+const playfair = Playfair_Display({
+  variable: '--font-playfair',
   weight: ['400', '500', '600', '700'],
   subsets: ['latin'],
+  display: 'swap',
+});
+
+const nunito = Nunito({
+  variable: '--font-nunito',
+  weight: ['300', '400', '500', '600', '700'],
+  subsets: ['latin'],
+  display: 'swap',
 });
 
 export const metadata: Metadata = {
@@ -28,7 +37,9 @@ export const metadata: Metadata = {
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className={`${inter.className} bg-primary-lightest antialiased`}>
+      <body
+        className={`${nunito.variable} ${playfair.variable} bg-background font-sans antialiased`}
+      >
         <ScrollToTop />
         <ReactQueryProvider>
           <ClientProviders>{children}</ClientProviders>

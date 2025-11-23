@@ -15,7 +15,7 @@ export default function CustomerLogin() {
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-  e.preventDefault();
+    e.preventDefault();
     const formData = new FormData(e.currentTarget);
     const email = formData.get('email') as string;
     const password = formData.get('password') as string;
@@ -33,9 +33,9 @@ export default function CustomerLogin() {
       setError('Invalid email or password');
     } else {
       // Redirect based on role
-      const session = await fetch('/api/auth/session').then(r => r.json());
+      const session = await fetch('/api/auth/session').then((r) => r.json());
       if (session?.user?.role === 'ADMIN') {
-        router.push('/dashboard');
+        router.push('/admin/dashboard');
       } else {
         router.push('/');
       }
@@ -44,7 +44,7 @@ export default function CustomerLogin() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-primary/5 to-secondary/5 p-4">
+    <div className="from-primary/5 to-secondary/5 flex min-h-screen items-center justify-center bg-gradient-to-br p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle className="text-center text-2xl">Welcome Back</CardTitle>
@@ -53,29 +53,18 @@ export default function CustomerLogin() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                name="email"
-                type="email"
-                required
-                placeholder="you@example.com"
-              />
+              <Input id="email" name="email" type="email" required placeholder="you@example.com" />
             </div>
             <div>
               <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                name="password"
-                type="password"
-                required
-              />
+              <Input id="password" name="password" type="password" required />
             </div>
-            {error && <p className="text-sm text-destructive">{error}</p>}
+            {error && <p className="text-destructive text-sm">{error}</p>}
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? 'Signing in...' : 'Login'}
             </Button>
           </form>
-          <p className="mt-4 text-center text-sm text-muted-foreground">
+          <p className="text-muted-foreground mt-4 text-center text-sm">
             Don't have an account?{' '}
             <a href="/auth/register" className="text-primary hover:underline">
               Register
