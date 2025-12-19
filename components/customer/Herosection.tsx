@@ -15,7 +15,7 @@ export default function HeroSection() {
       {/* Optional Background Image - Subtle */}
       <div className="absolute inset-0 z-[1] opacity-20">
         <Image
-          src="/home1.jpg"
+          src="/handicraft.jpg"
           alt="Handcrafted goods"
           fill
           priority

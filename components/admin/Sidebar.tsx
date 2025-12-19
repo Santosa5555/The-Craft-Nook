@@ -9,20 +9,20 @@ import { signOut } from 'next-auth/react';
 
 const navItems = [
   { href: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/dashboard/products', label: 'Products', icon: Package },
-  { href: '/dashboard/orders', label: 'Orders', icon: ShoppingCart },
-  { href: '/dashboard/customers', label: 'Customers', icon: Users },
-  { href: '/dashboard/settings', label: 'Settings', icon: Settings },
+  { href: '/admin/categories', label: 'Categories', icon: Package },
+  { href: '/admin/products', label: 'Products', icon: ShoppingCart },
+  { href: '/admin/orders', label: 'Orders', icon: Users },
+  { href: '/admin/settings', label: 'Settings', icon: Settings },
 ];
 
 export default function AdminSidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="fixed inset-y-0 left-0 z-50 w-64 bg-background border-r border-border flex flex-col">
+    <aside className="bg-background border-border fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r">
       {/* Logo */}
-      <div className="flex h-16 items-center justify-center border-b border-border px-6">
-        <Link href="/admin/dashboard" className="flex items-center gap-2 font-bold text-xl">
+      <div className="border-border flex h-16 items-center justify-center border-b px-6">
+        <Link href="/admin/dashboard" className="flex items-center gap-2 text-xl font-bold">
           <span className="text-primary">Handicraft</span>
           <span className="text-muted-foreground text-sm">Admin</span>
         </Link>
@@ -52,10 +52,10 @@ export default function AdminSidebar() {
       </nav>
 
       {/* Logout */}
-      <div className="border-t border-border p-4">
+      <div className="border-border border-t p-4">
         <Button
           variant="ghost"
-          className="w-full justify-start text-muted-foreground hover:text-foreground"
+          className="text-muted-foreground hover:text-foreground w-full justify-start"
           onClick={() => signOut({ callbackUrl: '/' })}
         >
           <LogOut className="mr-3 h-5 w-5" />

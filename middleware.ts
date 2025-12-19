@@ -7,6 +7,15 @@ export default withAuth(
     const { token } = req.nextauth;
     const { pathname } = req.nextUrl;
 
+    // === HOMEPAGE: Redirect admin users to dashboard ===
+    if (pathname === '/') {
+      if (token && token.role === 'ADMIN') {
+        return NextResponse.redirect(new URL('/admin/dashboard', req.url));
+      }
+      // Allow non-admin users and guests to access homepage
+      return NextResponse.next();
+    }
+
     // === ADMIN ROUTES ===
     // Protect admin dashboard and other admin routes (but allow /admin login page)
     if (
@@ -33,11 +42,18 @@ export default withAuth(
   },
   {
     callbacks: {
-      authorized: ({ token }) => !!token,
+      authorized: ({ token, req }) => {
+        // For homepage, allow access (we handle redirect logic above)
+        if (req.nextUrl.pathname === '/') {
+          return true;
+        }
+        // For protected routes, require token
+        return !!token;
+      },
     },
   }
 );
 
 export const config = {
-  matcher: ['/admin/:path*', '/cart/:path*', '/orders/:path*'],
+  matcher: ['/', '/admin/:path*', '/cart/:path*', '/orders/:path*'],
 };

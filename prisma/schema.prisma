@@ -15,14 +15,170 @@ datasource db {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  name      String?
-  password  String? 
-  role      Role     @default(USER) 
-  createdAt DateTime @default(now())
+  id         Int        @id @default(autoincrement())
+  email      String     @unique
+  name       String?
+  password   String?
+  role       Role       @default(USER)
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  cart       Cart?
+  orders     Order[]
+  addresses  Address[]
+  reviews    Review[]
 }
+
+model Address {
+  id          Int      @id @default(autoincrement())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      Int
+  fullName    String
+  phone       String
+  line1       String
+  line2       String?
+  city        String
+  state       String?
+  postalCode  String?
+  country     String
+  isDefault   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId, isDefault])
+}
+
+model ProductCategory {
+  id          Int                @id @default(autoincrement())
+  name        String
+  slug        String             @unique
+  description String?
+  parent      ProductCategory?   @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  parentId    Int?
+  children    ProductCategory[]  @relation("CategoryHierarchy")
+  products    Product[]
+  isActive    Boolean            @default(true)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  @@index([parentId])
+  @@index([isActive])
+}
+
+model Product {
+  id             Int               @id @default(autoincrement())
+  name           String
+  slug           String            @unique
+  description    String?
+  price          Decimal           @db.Decimal(10, 2)
+  compareAtPrice Decimal?          @db.Decimal(10, 2)
+  stock          Int               @default(0)
+  sku            String?           @unique
+  weightGrams    Int?
+  isActive       Boolean           @default(true)
+  category       ProductCategory   @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  categoryId     Int
+  images         ProductImage[]
+  cartItems      CartItem[]
+  orderItems     OrderItem[]
+  reviews        Review[]
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  @@index([categoryId, isActive])
+  @@index([createdAt])
+}
+
+model ProductImage {
+  id        Int     @id @default(autoincrement())
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId Int
+  url       String
+  alt       String?
+  position  Int     @default(0)
+}
+
+model Cart {
+  id        Int        @id @default(autoincrement())
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    Int        @unique
+  items     CartItem[]
+  updatedAt DateTime   @updatedAt
+}
+
+model CartItem {
+  id        Int     @id @default(autoincrement())
+  cart      Cart    @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  cartId    Int
+  product   Product @relation(fields: [productId], references: [id], onDelete: Restrict)
+  productId Int
+  quantity  Int     @default(1)
+
+  @@unique([cartId, productId])
+}
+
+model Order {
+  id            Int          @id @default(autoincrement())
+  orderNumber   String       @unique
+  user          User         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userId        Int
+  status        OrderStatus  @default(PENDING)
+  totalAmount   Decimal      @db.Decimal(10, 2)
+  subtotal      Decimal      @db.Decimal(10, 2)
+  taxTotal      Decimal      @db.Decimal(10, 2) @default(0)
+  shippingTotal Decimal      @db.Decimal(10, 2) @default(0)
+  paymentStatus PaymentStatus @default(UNPAID)
+  shippingAddress Json
+  billingAddress  Json
+  items         OrderItem[]
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  @@index([userId])
+  @@index([status, createdAt])
+}
+
+model OrderItem {
+  id          Int     @id @default(autoincrement())
+  order       Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId     Int
+  product     Product @relation(fields: [productId], references: [id], onDelete: Restrict)
+  productId   Int
+  quantity    Int
+  unitPrice   Decimal @db.Decimal(10, 2)
+  totalPrice  Decimal @db.Decimal(10, 2)
+}
+
+model Review {
+  id        Int      @id @default(autoincrement())
+  rating    Int      @default(5)
+  comment   String?
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([productId, userId])
+  @@index([rating])
+}
+
 enum Role {
   USER
   ADMIN
+}
+
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  REFUNDED
+}
+
+enum PaymentStatus {
+  UNPAID
+  PAID
+  REFUNDED
 }
