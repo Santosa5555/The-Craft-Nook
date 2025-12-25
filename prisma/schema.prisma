@@ -22,29 +22,13 @@ model User {
   role       Role       @default(USER)
   createdAt  DateTime   @default(now())
   updatedAt  DateTime   @updatedAt
+  phoneNubmer String?
+  Region      String?
+  city        String?
+  Street      String?
   cart       Cart?
   orders     Order[]
-  addresses  Address[]
   reviews    Review[]
-}
-
-model Address {
-  id          Int      @id @default(autoincrement())
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId      Int
-  fullName    String
-  phone       String
-  line1       String
-  line2       String?
-  city        String
-  state       String?
-  postalCode  String?
-  country     String
-  isDefault   Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  @@index([userId, isDefault])
 }
 
 model ProductCategory {
@@ -132,7 +116,7 @@ model Order {
   items         OrderItem[]
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
-
+  
   @@index([userId])
   @@index([status, createdAt])
 }

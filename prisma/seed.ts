@@ -28,12 +28,6 @@ async function main() {
       role: 'ADMIN',
     },
   });
-
-  console.log('✅ Admin user seeded:', {
-    id: admin.id,
-    email: admin.email,
-    role: admin.role,
-  });
 }
 
 main()

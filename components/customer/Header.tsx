@@ -2,6 +2,8 @@
 
 import { useSession, signOut } from 'next-auth/react';
 import Link from 'next/link';
+import axios from 'axios';
+import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { ShoppingCart, User, LogOut } from 'lucide-react';
@@ -13,6 +15,19 @@ type Props = { initialUser: any };
 export default function CustomerHeader({ initialUser }: Props) {
   const { data: session } = useSession();
   const user = session?.user || initialUser;
+
+  const { data: cartCountData } = useQuery({
+    queryKey: ['cart-count'],
+    queryFn: async () => {
+      const response = await axios.get<{ count: number }>('/api/cart/count');
+      return response.data;
+    },
+    enabled: !!session?.user,
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
+  });
+
+  const cartCount = cartCountData?.count ?? 0;
 
   const getUserInitials = (name?: string | null) => {
     if (!name) return 'U';
@@ -53,9 +68,11 @@ export default function CustomerHeader({ initialUser }: Props) {
             aria-label="Shopping cart"
           >
             <ShoppingCart className="h-5 w-5 drop-shadow-md transition-transform group-hover:scale-110" />
-            <span className="from-primary to-secondary text-primary-foreground absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-br text-xs font-semibold shadow-lg">
-              0
-            </span>
+            {cartCount > 0 && (
+              <span className="from-primary to-secondary text-primary-foreground absolute -top-1 -right-1 flex min-w-[1.25rem] items-center justify-center rounded-full bg-gradient-to-br px-1 text-xs font-semibold shadow-lg">
+                {cartCount > 99 ? '99+' : cartCount}
+              </span>
+            )}
           </Link>
 
           {/* Guest User */}

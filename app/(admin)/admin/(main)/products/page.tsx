@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Loader2, Pencil, PlusCircle, Trash2 } from 'lucide-react';
-
+import { ProductType } from '@/utils/types/product';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
@@ -22,7 +22,7 @@ type Product = {
   id: number;
   name: string;
   slug: string;
-  price: string;
+  price: string | number; // Prisma Decimal serializes to string in JSON
   stock: number;
   isActive: boolean;
   category: { id: number; name: string } | null;
@@ -42,15 +42,13 @@ type ProductsResponse = {
   pagination: PaginationMeta;
 };
 
-export const revalidate = 60;
-
-export default async function ProductsPage() {
+export default function ProductsPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
   const pageSize = 10;
 
-  const { data, isLoading, isFetching } = useQuery({
+  const { data, isLoading, isFetching } = useQuery<ProductsResponse>({
     queryKey: ['admin-products', page],
     queryFn: async () => {
       const response = await axios.get<ProductsResponse>('/api/admin/products', {
@@ -58,7 +56,6 @@ export default async function ProductsPage() {
       });
       return response.data;
     },
-    keepPreviousData: true,
   });
 
   const deleteMutation = useMutation({
@@ -66,11 +63,16 @@ export default async function ProductsPage() {
       await axios.delete(`/api/admin/products/${productId}`);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-products', page] });
+      queryClient.invalidateQueries({ queryKey: ['admin-products'] });
     },
   });
 
-  const products = data?.products ?? [];
+  // Transform products to match ProductType (convert price to string if needed)
+  const products: ProductType[] =
+    data?.products.map((product) => ({
+      ...product,
+      price: typeof product.price === 'string' ? product.price : String(product.price),
+    })) ?? [];
   const pagination = data?.pagination;
 
   const handleDelete = (productId: number) => {
@@ -131,7 +133,7 @@ export default async function ProductsPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {products.map((product) => (
+                    {products.map((product: ProductType) => (
                       <TableRow key={product.id}>
                         <TableCell className="text-foreground font-medium">
                           {product.name}

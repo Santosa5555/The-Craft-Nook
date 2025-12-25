@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import { z } from 'zod';
 import { Prisma } from '@/lib/generated/prisma';
 import { prisma } from '@/lib/prisma';
 
@@ -7,42 +6,46 @@ const DEFAULT_PAGE = 1;
 const DEFAULT_PAGE_SIZE = 12;
 const MAX_PAGE_SIZE = 48;
 
-const querySchema = z.object({
-  page: z.coerce.number().int().min(1).optional(),
-  pageSize: z.coerce.number().int().min(1).max(MAX_PAGE_SIZE).optional(),
-  search: z.string().trim().optional(),
-  categoryId: z.coerce.number().int().positive().optional(),
-  minPrice: z.coerce.number().nonnegative().optional(),
-  maxPrice: z.coerce.number().nonnegative().optional(),
-});
-
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
-    const parsed = querySchema.safeParse({
-      page: searchParams.get('page'),
-      pageSize: searchParams.get('pageSize'),
-      search: searchParams.get('search'),
-      categoryId: searchParams.get('categoryId'),
-      minPrice: searchParams.get('minPrice'),
-      maxPrice: searchParams.get('maxPrice'),
-    });
 
-    if (!parsed.success) {
-      return NextResponse.json(
-        { message: 'Invalid query parameters', errors: parsed.error.flatten().fieldErrors },
-        { status: 400 }
-      );
-    }
+    // Parse and sanitize query params in a forgiving way so we don't 400 on minor issues
+    const pageRaw = searchParams.get('page');
+    const pageSizeRaw = searchParams.get('pageSize');
+    const search = searchParams.get('search')?.trim() || undefined;
+    const categoryIdRaw = searchParams.get('categoryId');
+    const minPriceRaw = searchParams.get('minPrice');
+    const maxPriceRaw = searchParams.get('maxPrice');
 
-    const {
-      page: parsedPage,
-      pageSize: parsedPageSize,
-      search,
-      categoryId,
-      minPrice,
-      maxPrice,
-    } = parsed.data;
+    const pageParsed = pageRaw ? Number(pageRaw) : undefined;
+    const pageSizeParsed = pageSizeRaw ? Number(pageSizeRaw) : undefined;
+    const categoryIdParsed = categoryIdRaw ? Number(categoryIdRaw) : undefined;
+    const minPriceParsed = minPriceRaw ? Number(minPriceRaw) : undefined;
+    const maxPriceParsed = maxPriceRaw ? Number(maxPriceRaw) : undefined;
+
+    const page =
+      pageParsed && Number.isInteger(pageParsed) && pageParsed > 0 ? pageParsed : DEFAULT_PAGE;
+
+    let pageSize =
+      pageSizeParsed && Number.isInteger(pageSizeParsed) && pageSizeParsed > 0
+        ? pageSizeParsed
+        : DEFAULT_PAGE_SIZE;
+    pageSize = Math.min(pageSize, MAX_PAGE_SIZE);
+
+    const categoryId =
+      categoryIdParsed && Number.isInteger(categoryIdParsed) && categoryIdParsed > 0
+        ? categoryIdParsed
+        : undefined;
+
+    const minPrice =
+      typeof minPriceParsed === 'number' && !Number.isNaN(minPriceParsed) && minPriceParsed >= 0
+        ? minPriceParsed
+        : undefined;
+    const maxPrice =
+      typeof maxPriceParsed === 'number' && !Number.isNaN(maxPriceParsed) && maxPriceParsed >= 0
+        ? maxPriceParsed
+        : undefined;
 
     if (typeof minPrice === 'number' && typeof maxPrice === 'number' && maxPrice < minPrice) {
       return NextResponse.json(
@@ -51,8 +54,6 @@ export async function GET(request: Request) {
       );
     }
 
-    const page = parsedPage ?? DEFAULT_PAGE;
-    const pageSize = parsedPageSize ?? DEFAULT_PAGE_SIZE;
     const skip = (page - 1) * pageSize;
 
     const where: Prisma.ProductWhereInput = {

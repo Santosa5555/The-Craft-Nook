@@ -120,9 +120,9 @@ export async function PATCH(req: Request, { params }: { params: { productId: str
     ) {
       data.compareAtPrice = null;
     }
-    if (updates.stock) data.stock = Number(updates.stock);
-    if (updates.categoryId) data.categoryId = Number(updates.categoryId);
-    if (updates.isActive) {
+    if (updates.stock !== undefined) data.stock = Number(updates.stock);
+    if (updates.categoryId !== undefined) data.category = { connect: { id: Number(updates.categoryId) } };
+    if (updates.isActive !== undefined) {
       data.isActive = updates.isActive === 'true' || updates.isActive === 'on';
     }
     if (imageUrls.length > 0) {
